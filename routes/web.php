@@ -18,10 +18,16 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::post('/employee', [EmpController::class, 'store']);
+Route::get('/fetch-emp', [EmpController::class, 'fetchemployee']);
 
-Route::post('/session-save', [EmpController::class, 'saveSessionData']);
-
-Route::get('/', [EmpController::class, 'showSessionData']);
+// save fetchSession
+//Route::get('/', [EmpController::class, 'fetchSession']);
+//Route::post('/session-save', [EmpController::class, 'saveSessionData']);
+// show list
+//Route::get('/', [EmpController::class, 'showSessionData']);
+// update 
+//Route::get('/edit', [EmpController::class, 'editSessionData']);
 
 
 

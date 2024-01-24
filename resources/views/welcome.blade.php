@@ -11,165 +11,243 @@
         <!-- Styles -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-        <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+        
 
-        <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        <script type="text/javascript" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-
-
-    </head>
+        </head>
     @php
     session_start();
+
     @endphp
     <body class="antialiased">
       <div class="container mt-5">
         <div class="row">
-            <div class="col-md-10">
+            <div class="col-md-12">
+
+            <div id="success_message"></div>
+
                 <div class="card">
-                @if(session('success'))
-                    <div class="alert alert-success">
-                        {{ session('success') }}
-                    </div>
-                @endif
                     <div class="card-header">
-                        <h3>
-                            <a href="{{ url('#') }}" class="btn btn-dark btn-sm float-end" data-bs-toggle="modal" data-bs-target="#addRecordModal">New Add Record</a>
-                        </h3>
+                    <h4>
+                        Add New Data
+                        <button type="button" class="btn btn-primary float-end" data-bs-toggle="modal"
+                            data-bs-target="#AddModal">Add Employee</button>
+                    </h4>
                     </div>
-                    <div class="card-body">
-
-                     <table id="tableList" class="table table-striped table-bordered">
-                          <thead>
+                  <div class="card-body">
+                    <table class="table table-bordered">
+                        <thead>
                             <tr>
-                              <th scope="col">Name</th>
-                              <th scope="col">Image</th>
-                              <th scope="col">Address</th>
-                              <th scope="col">Gender</th>
-                              <th scope="col">Action</th>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Image</th>
+                                <th>Address</th>
+                                <th>Gender</th>
+                                <th>Edit</th>
+                                <th>Delete</th>
                             </tr>
-                          </thead>
-                          <tbody>
-                        @if(isset($empData))
-                          @foreach ($empData as $epm)
-                            <tr>
-                                <td>{{ $epm['empName'] }}</td>
-                                <td>{{ $epm['empImage'] }}</td>
-                                <td>{{ $epm['empAddress']  }}</td>
-                                <td>{{ $epm['empGender'] }}</td>
-                                <td>
-                                    <a class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editRecordModal" href="#">Edit</a>
-                                    <a class="btn btn-danger btn-sm" href="#">Delete</a>
-                                    <a class="btn btn-secondary btn-sm" href="#">View</a>
-                                </td>
-                            </tr> 
-                          @endforeach
-                        @else
-                            <p>No data available in session.</p>
-                        @endif
-                          </tbody>
-                        </table> 
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                  </div>
 
-                    </div>
                 </div>
             </div>
         </div>
       </div>
 
-      <!-- Add Model -->
-      
-<div class="modal fade" id="addRecordModal" tabindex="-1" aria-labelledby="addRecordModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h1 class="modal-title fs-5" id="addRecordModalLabel">Create New Record</h1>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <form action="#" method="POST" id="saveModel" enctype="multipart/form-data">@csrf
-          <div class="mb-1">
-            <label for="empName" class="col-form-label">Name:</label>
-            <input type="text" class="form-control" name="empName" id="empName">
+
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+      <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<!-- Add Model -->
+<!-- =============================================== -->
+<div class="modal fade" id="AddModal" tabindex="-1" aria-labelledby="AddModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="AddModalLabel">Add New Data</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <form id="employeeForm" enctype="multipart/form-data">
+                  {{ csrf_field() }}
+                  <ul id="save_msgList"></ul>
+
+                  <div class="form-group mb-3">
+                      <label for="">Full Name</label>
+                      <input type="text" required name="name" class="name form-control">
+                  </div>
+                  <div class="form-group mb-3">
+                      <label for="">Image</label>
+                      <input type="file" name="image" class="image form-control">
+                  </div>
+                  <div class="form-group mb-3">
+                      <label for="">Address</label>
+                      <input type="text" required name="address" class="address form-control">
+                  </div>
+                  <div class="mb-1">
+                      <label class="col-form-label">Select Gender:</label>
+                      <select class="form-select gender" name="gender" id="gender" required>
+                          <option>-- Select --</option>
+                          <option value="male">Male</option>
+                          <option value="female">Female</option>
+                      </select>
+                  </div>
+              </form>
           </div>
-          <div class="mb-1">
-            <label for="empImage" class="col-form-label">Image:</label>
-            <input type="file" class="form-control" name="empImage" id="empImage">
-          </div>
-          <div class="mb-1">
-            <label for="empAddress" class="col-form-label">Address:</label>
-            <input type="text" class="form-control" name="empAddress" id="empAddress">
-          </div>
-          <div class="mb-1">
-            <label class="col-form-label">Select Gender:</label>
-            <select class="form-select" id="empGender">
-              <option selected>-- Select --</option>
-              <option value="Male">Male</option>
-              <option value="Female">Female</option>
-            </select>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-primary  add_emp_session">Save</button>
           </div>
 
-        </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button  class="btn btn-success" id="saveButton">Save</button>
-      </div>
+        </div>
     </div>
-  </div>
 </div>
-      <!-- End Add Model -->
 
 <script>
   $(document).ready(function () {
 
+      $.ajaxSetup({
+            headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
 
-$("#tableList").DataTable({
-    paging: true,
-    pagingType: "full_numbers",
-    lengthMenu: [[10, 50], [10, 50]],
-    autoWidth: true,
-    columnDefs: [{
-        "defaultContent": "-",
-        "targets": "_all"
-    }],
-});
-
-    $('#saveButton').click(function () {
-
-      var empName = $('#empName').val();
-      var empImage = $('#empImage').val();
-      var empAddress = $('#empAddress').val();
-      var empGender = $('#empGender').val();
-
-      $.ajax({
-        url: '/session-save',
-        method: 'POST',
-        data: {
-          empName: empName,
-          empImage: empImage,
-          empAddress: empAddress,
-          empGender: empGender,
-          _token: $('meta[name="csrf-token"]').attr('content'),
-        },
-        dataType: 'JSON',
-        success: function (response) {
-          $('#addRecordModal').modal('hide');
-          if (response.status == true) {
-              alert(response.message);
-              window.location.reload();
-          }
-          //console.log('Data saved to session:', response);
-        },
-        error: function (error) {
-          console.error('Error saving data to session:', error);
+        /* Display data into Datatable  '<td><img src="' + item.image_path + '" alt="Employee Image" style="width: 100px; height: auto;"></td>'
+*/ 
+        fetchstudent();
+        function fetchstudent() {
+            $.ajax({
+                type: "GET",
+                url: "/fetch-emp",
+                dataType: "json",
+                success: function (response) {
+                     console.log(response.data['name']);
+                    $('tbody').html("");
+                    $.each(response.data, function (key, item) {
+                        $('tbody').append('<tr>\
+                            <td>' + key + '</td>\
+                            <td>' + item.name + '</td>\
+                            <td>' + item.image_path + '</td>\
+                            <td>' + item.address + '</td>\
+                            <td>' + item.gender + '</td>\
+                            <td><button type="button" value="' + item.id + '" class="btn btn-primary editbtn btn-sm">Edit</button></td>\
+                            <td><button type="button" value="' + item.id + '" class="btn btn-danger deletebtn btn-sm">Delete</button></td>\
+                        \</tr>');
+                    });
+                }
+            });
         }
-      });
+
+
+        /* End Display data into DataTable */
+
+    /* Insert data into Session */
+    $(document).on('click', '.add_emp_session', function (e) {
+              e.preventDefault();
+              var formData = new FormData($('#employeeForm')[0]);
+
+        // Check if the required fields are present and not empty
+        if (!formData.has('name') || !formData.get('name')) {
+            alert('Please enter a name.');
+            return;
+        }
+        if (!formData.has('image') || !formData.get('image')) {
+            alert('Please enter a image.');
+            return;
+        }
+        if (!formData.has('address') || !formData.get('address')) {
+            alert('Please enter a address.');
+            return;
+        }
+        if (!formData.has('gender') || !formData.get('gender')) {
+            alert('Please enter a gender.');
+            return;
+        }
+  
+
+        $.ajax({
+            type: 'POST',
+            url: '/employee',
+            data: formData,
+            cache: false, // Set cache to false
+            contentType: false,
+            processData: false,
+            success: function(response) {
+                // console.log('Employee and image saved to session successfully:', response);
+                  if (response.status == 400) {
+                    $('#save_msgList').html("");
+                    $('#save_msgList').addClass('alert alert-danger');
+                    $.each(response.errors, function (key, err_value) {
+                        $('#save_msgList').append('<li>' + err_value + '</li>');
+                    });
+                    $('.add_emp_session').text('Save');
+                } else {
+                    $('#save_msgList').html("");
+                    $('#success_message').addClass('alert alert-success');
+                    $('#success_message').text(response.message);
+                    $('#AddModal').find('input').val('');
+                    $('.add_emp_session').text('Save');
+                    $('#AddModal').modal('hide');
+                    fetchstudent();
+                }
+            },
+            
+        });
     });
+    /* End Insert data into Session */
+
+
+
   });
+
+  //   $(document).on('click', '.add_emp_session', function (e) {
+  //           e.preventDefault();
+
+  //           $(this).text('Sending..');
+
+  //           var data = {
+  //               'name': $('.name').val(),
+  //               'image': $('.image').val(),
+  //               'address': $('.address').val(),
+  //               'gender': $('.gender').val(),
+  //           }
+
+  //           $.ajax({
+  //               type: "POST",
+  //               url: "/employee",
+  //               data: data,
+  //               success: function (response) {
+  //                   // console.log(response);
+  //                   if (response.status == 400) {
+  //                       $('#save_msgList').html("");
+  //                       $('#save_msgList').addClass('alert alert-danger');
+  //                       $.each(response.errors, function (key, err_value) {
+  //                           $('#save_msgList').append('<li>' + err_value + '</li>');
+  //                       });
+  //                       $('.add_emp_session').text('Save');
+  //                   } else {
+  //                       $('#save_msgList').html("");
+  //                       $('#success_message').addClass('alert alert-success');
+  //                       $('#success_message').text(response.message);
+  //                       $('#AddModal').find('input').val('');
+  //                       $('.add_emp_session').text('Save');
+  //                       $('#AddModal').modal('hide');
+  //                      // fetchstudent();
+  //                   }
+  //               }
+  //           });
+
+  //       });
+
+
+
+
+ 
+
+
+
+
 </script>
-
-
-
     </body>
 </html>

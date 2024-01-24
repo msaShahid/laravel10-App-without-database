@@ -2,47 +2,68 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+
 use Illuminate\Support\Facades\Session;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+
 
 
 class EmpController extends Controller
 {
-    public function saveSessionData(){
 
+    public function store(Request $request){
         session_start();
 
-        $data = request()->all();
+    
+        $validator = Validator::make($request->all(), [
+            'name'=> 'required|max:191',
+            'image' => 'required|image|mimes:jpeg,png,jpg',
+            'address'=>'required|max:191',
+            'gender' => 'required|in:male,female'
+        ]);
 
-        if (is_array($data)) {
-            if (session()->has('data')) {
-                $existingData = session()->get('data');
-                $existingData[] = $data;
-                session()->put('data', $existingData);
-            } else {
-                session()->put('data', [$data]);
-            }
-        
-            return response()->json([
-                'status' => true,
-                'message' => 'Session data saved successfully.',
-            ]);
-        } else {
-            return response()->json([
-                'status' => false,
-                'message' => 'Invalid data format.',
-            ]);
-        }
+        if($validator->fails()){
 
+            return response()->json(['status'=>400,'errors'=>$validator->messages()]);
+
+        }else{
+
+            // Handle the image upload
+            $image = $request->file('image');
+            $imageName = time().'.'.$image->extension();
+            $image->move(public_path('images'), $imageName);
+
+            // Save data and image path to session
+            $employeeData = [
+                'name' => $request->input('name'),
+                'address' => $request->input('address'),
+                'gender' => $request->input('gender'),
+                'image_path' => 'images/' . $imageName,
+            ];
+
+           // dd($employeeData);
+           // Store data in session
+            Session::push('employees', $employeeData);
+
+            return response()->json(['message' => 'Employee data saved into session.']);
+        } 
     }
 
-    
-    public function showSessionData(){
 
-        $empData = Session::get('data');
+    public function fetchemployee(){
+        
+        $empData = Session::get('employees');
 
        // dd($empData);
-
-        return view('welcome', compact('empData'));
+        return response()->json(['data'=>$empData]);
     }
+   
+ 
+
+
+  
+
+
+    // End Controller here...
 }
