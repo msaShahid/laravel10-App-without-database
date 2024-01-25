@@ -10,9 +10,8 @@
         <link href="https://fonts.bunny.net/css?family=figtree:400,600&display=swap" rel="stylesheet" />
         <!-- Styles -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
   
-        
-
         </head>
     @php
     session_start();
@@ -34,7 +33,7 @@
                     </h4>
                     </div>
                   <div class="card-body">
-                    <table class="table table-bordered">
+                    <table id="employeeTable" class="table table-bordered">
                         <thead>
                             <tr>
                                 <th>ID</th>
@@ -42,8 +41,7 @@
                                 <th>Image</th>
                                 <th>Address</th>
                                 <th>Gender</th>
-                                <th>Edit</th>
-                                <th>Delete</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -59,6 +57,8 @@
 
       <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
       <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+      <script src="https://cdn.datatables.net/1.13.8/js/jquery.dataTables.min.js"></script>
+      <script src="https://cdn.datatables.net/1.13.8/js/dataTables.bootstrap5.min.js"></script>
 <!-- Add Model -->
 <!-- =============================================== -->
 <div class="modal fade" id="AddModal" tabindex="-1" aria-labelledby="AddModalLabel" aria-hidden="true">
@@ -103,9 +103,90 @@
         </div>
     </div>
 </div>
+<!-- End Add Model -->
+
+<!-- Edit Model -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalLabel">Edit & Update Employee Data</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <form id="updateEmployeeForm" enctype="multipart/form-data">
+                  {{ csrf_field() }}
+                  {{ method_field('PUT') }}
+
+                    <ul id="update_msgList"></ul>
+
+                    <input type="hidden" id="empID" />
+
+                    <div class="form-group mb-3">
+                        <label for="">Full Name</label>
+                        <input type="text" id="name" name="name" required class="form-control name">
+                    </div>
+                    <div class="form-group mb-3 row">
+                        <div class="col-6">
+                            <label for="">Image</label>
+                            <input type="file" id="image" name="image" required class="form-control image">
+                        </div>
+                        <div class="col-6">
+                            <img id="image-preview"  style="height: 100px; width: 100px;">
+                        </div>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="">Address</label>
+                        <input type="text" id="address" name="address" required class="form-control address">
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="col-form-label">Select Gender:</label>
+                        <select class="form-select gender" name="gender" id="gender" required>
+                            <option>-- Select --</option>
+                            <option value="male" >Male</option>
+                            <option value="female">Female</option>
+                        </select>
+                    </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary update_emp_session">Update</button>
+                    </div>
+                </form>
+        </div>
+    </div>
+</div>
+
+<!-- End Edit Model -->
+
+<!-- Delete Model -->
+
+<div class="modal fade" id="DeleteModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Delete Data</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h4>Confirm to Delete Data ?</h4>
+                <input type="hidden" id="empID">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-danger delete_emp_session">Yes, Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- End Delete Model -->
 
 <script>
   $(document).ready(function () {
+
+    var table = $('#employeeTable').dataTable();
 
       $.ajaxSetup({
             headers: {
@@ -113,28 +194,37 @@
             }
         });
 
-        /* Display data into Datatable  '<td><img src="' + item.image_path + '" alt="Employee Image" style="width: 100px; height: auto;"></td>'
-*/ 
-        fetchstudent();
-        function fetchstudent() {
+        /* Display data into Datatable */ 
+        fetchemployee();
+
+        function fetchemployee() {
             $.ajax({
                 type: "GET",
                 url: "/fetch-emp",
                 dataType: "json",
                 success: function (response) {
-                     console.log(response.data['name']);
+
+                    $('#employeeTable').DataTable().clear().destroy();
+
                     $('tbody').html("");
                     $.each(response.data, function (key, item) {
-                        $('tbody').append('<tr>\
-                            <td>' + key + '</td>\
-                            <td>' + item.name + '</td>\
-                            <td>' + item.image_path + '</td>\
-                            <td>' + item.address + '</td>\
-                            <td>' + item.gender + '</td>\
-                            <td><button type="button" value="' + item.id + '" class="btn btn-primary editbtn btn-sm">Edit</button></td>\
-                            <td><button type="button" value="' + item.id + '" class="btn btn-danger deletebtn btn-sm">Delete</button></td>\
-                        \</tr>');
+                        $('tbody').append(
+                        `<tr>
+                            <td>${key+1}</td>
+                            <td>${item.name}</td>
+                            <td><img src="${item.image_path}" alt="Image" style="width: 50px; height: 50px;"></td>
+                            <td>${item.address}</td>
+                            <td>${item.gender}</td>
+                            <td>
+                                <a value="${key}" class="btn btn-primary editbtn btn-sm">Edit</a>
+                                <a value="${key}" class="btn btn-danger deletebtn btn-sm">Delete</a>
+                                <a value="${key}" class="btn btn-success viewbtn btn-sm">View</a>
+                            </td>
+                        </tr>`
+                        );
                     });
+
+                    $('#employeeTable').DataTable();
                 }
             });
         }
@@ -144,101 +234,155 @@
 
     /* Insert data into Session */
     $(document).on('click', '.add_emp_session', function (e) {
-              e.preventDefault();
-              var formData = new FormData($('#employeeForm')[0]);
 
-        // Check if the required fields are present and not empty
-        if (!formData.has('name') || !formData.get('name')) {
-            alert('Please enter a name.');
-            return;
-        }
-        if (!formData.has('image') || !formData.get('image')) {
-            alert('Please enter a image.');
-            return;
-        }
-        if (!formData.has('address') || !formData.get('address')) {
-            alert('Please enter a address.');
-            return;
-        }
-        if (!formData.has('gender') || !formData.get('gender')) {
-            alert('Please enter a gender.');
-            return;
+        e.preventDefault();
+        var formData = new FormData($('#employeeForm')[0]);
+
+        var requiredFields = ['name','image','address', 'gender'];
+
+        for (var i = 0; i < requiredFields.length; i++) {
+            var fieldName = requiredFields[i];
+            if (!formData.has(fieldName) || !formData.get(fieldName)) {
+                alert('Please enter a ' + fieldName + '. Its required !'); return;
+            }
         }
   
-
         $.ajax({
             type: 'POST',
             url: '/employee',
             data: formData,
-            cache: false, // Set cache to false
+            cache: false,
             contentType: false,
             processData: false,
             success: function(response) {
-                // console.log('Employee and image saved to session successfully:', response);
                   if (response.status == 400) {
                     $('#save_msgList').html("");
                     $('#save_msgList').addClass('alert alert-danger');
                     $.each(response.errors, function (key, err_value) {
-                        $('#save_msgList').append('<li>' + err_value + '</li>');
+                        $('#save_msgList').append(`<li> ${err_value}</li>`);
                     });
-                    $('.add_emp_session').text('Save');
                 } else {
                     $('#save_msgList').html("");
                     $('#success_message').addClass('alert alert-success');
                     $('#success_message').text(response.message);
                     $('#AddModal').find('input').val('');
-                    $('.add_emp_session').text('Save');
                     $('#AddModal').modal('hide');
-                    fetchstudent();
+                    fetchemployee();
                 }
-            },
-            
+            },  
         });
+        $('.btn-close').find('input').val('');
     });
     /* End Insert data into Session */
 
+    /* Show Data for Edit */
+    $(document).on('click', '.editbtn', function (e) {
+            e.preventDefault();
+            var empID = $(this).attr('value');
+             $('#editModal').modal('show');
+             $.ajax({
+                 type: "GET",
+                 url: "/edit-emp?empID="+empID,
+                 dataType: "json",
+                 success: function (response) {
+                    if (response.status == 404) {
+                        $('#success_message').addClass('alert alert-danger');
+                        $('#success_message').text(response.message);
+                        $('#editModal').modal('hide');
+                    } else {
+                        $('#empID').val(response.empID);
+                        $('#name').val(response.data.name);
+                        var imageUrl = response.data.image_path;
+                        $('#image-preview').attr('src', imageUrl);
+                        $('#address').val(response.data.address);
+                        var genderValue = response.data.gender;
+                        $('#gender').val(genderValue);
+                        $('#gender option[value="' + genderValue + '"]').prop('selected', true);
+                    }
+                 }
+             });
+             $('.btn-close').find('input').val('');
 
-
+        });
   });
 
-  //   $(document).on('click', '.add_emp_session', function (e) {
-  //           e.preventDefault();
+  /* End Show Data for Edit */
 
-  //           $(this).text('Sending..');
+  /* Update Data */
+  $(document).on('click', '.update_emp_session', function (e) {
+            e.preventDefault();
 
-  //           var data = {
-  //               'name': $('.name').val(),
-  //               'image': $('.image').val(),
-  //               'address': $('.address').val(),
-  //               'gender': $('.gender').val(),
-  //           }
+            var data = {
+                'empID': $('#empID').val(),
+                'name': $('#name').val(),
+                'address': $('#address').val(),
+                'gender': $('#gender').val(),
+            }
 
-  //           $.ajax({
-  //               type: "POST",
-  //               url: "/employee",
-  //               data: data,
-  //               success: function (response) {
-  //                   // console.log(response);
-  //                   if (response.status == 400) {
-  //                       $('#save_msgList').html("");
-  //                       $('#save_msgList').addClass('alert alert-danger');
-  //                       $.each(response.errors, function (key, err_value) {
-  //                           $('#save_msgList').append('<li>' + err_value + '</li>');
-  //                       });
-  //                       $('.add_emp_session').text('Save');
-  //                   } else {
-  //                       $('#save_msgList').html("");
-  //                       $('#success_message').addClass('alert alert-success');
-  //                       $('#success_message').text(response.message);
-  //                       $('#AddModal').find('input').val('');
-  //                       $('.add_emp_session').text('Save');
-  //                       $('#AddModal').modal('hide');
-  //                      // fetchstudent();
-  //                   }
-  //               }
-  //           });
+            $.ajax({
+                type: "PUT",
+                url: "/update-emp",
+                data: data,
+                dataType: "json",
+                cache: false,
+                success: function (response) {
+                    if (response.status == 400) {
+                        $('#update_msgList').html("");
+                        $('#update_msgList').addClass('alert alert-danger');
+                        $.each(response.errors, function (key, err_value) {
+                            $('#update_msgList').append(`<li> ${err_value} </li>`);
+                        });
+                    } else {
+                        $('#update_msgList').html("");
+                        $('#success_message').addClass('alert alert-success');
+                        $('#success_message').text(response.message);
+                        $('#editModal').find('input').val('');
+                        $('#editModal').modal('hide');
+                        fetchemployee();
+                    } 
+                    
+                }
+            }); 
 
-  //       });
+        });
+
+  /* End Update Data */
+
+  /* Delete Data */
+
+        $(document).on('click', '.deletebtn', function () {
+            var empID = $(this).attr('value');
+            $('#DeleteModal').modal('show');
+            $('#empID').val(empID);
+        });
+
+        $(document).on('click', '.delete_emp_session', function (e) {
+            e.preventDefault();
+
+            var empID = $('#empID').val();
+            alert(empID);
+
+            $.ajax({
+                type: "DELETE",
+                url: "/delete-emp?empID=" +empID ,
+                dataType: "json",
+                success: function (response) {
+                    if (response.status == 404) {
+                        $('#success_message').addClass('alert alert-success');
+                        $('#success_message').text(response.message);
+                    } else {
+                        $('#success_message').html("");
+                        $('#success_message').addClass('alert alert-success');
+                        $('#success_message').text(response.message);
+                        $('#DeleteModal').modal('hide');
+                        fetchstudent();
+                    } 
+                }
+            });
+        });
+
+  /* Delete Data */
+
 
 
 

@@ -20,14 +20,8 @@ Route::get('/', function () {
 
 Route::post('/employee', [EmpController::class, 'store']);
 Route::get('/fetch-emp', [EmpController::class, 'fetchemployee']);
-
-// save fetchSession
-//Route::get('/', [EmpController::class, 'fetchSession']);
-//Route::post('/session-save', [EmpController::class, 'saveSessionData']);
-// show list
-//Route::get('/', [EmpController::class, 'showSessionData']);
-// update 
-//Route::get('/edit', [EmpController::class, 'editSessionData']);
-
+Route::get('/edit-emp', [EmpController::class, 'editemployee']);
+Route::put('/update-emp', [EmpController::class, 'updateEmployee']);
+Route::delete('/delete-emp', [EmpController::class, 'deleteEmployee']);
 
 
