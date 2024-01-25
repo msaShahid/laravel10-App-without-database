@@ -23,5 +23,7 @@ Route::get('/fetch-emp', [EmpController::class, 'fetchemployee']);
 Route::get('/edit-emp', [EmpController::class, 'editemployee']);
 Route::put('/update-emp', [EmpController::class, 'updateEmployee']);
 Route::delete('/delete-emp', [EmpController::class, 'deleteEmployee']);
+Route::get('/edit-view', [EmpController::class, 'viewEmployee']);
+
 
 

@@ -183,10 +183,43 @@
 
 <!-- End Delete Model -->
 
+<div class="modal fade" id="viewModal" tabindex="-1" aria-labelledby="viewModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewModalLabel">View Employee Data</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                    <ul id="update_msgList"></ul>
+                    <input type="hidden" id="empID" />
+                    <div class="form-group mb-3">
+                        <div class="col-10">
+                            <img id="image-preview-view"  style="height: 200px; width: 200px;">
+                        </div>
+                    </div>
+                    <div class="form-group mb-3">
+                       <span> <label for="">Full Name :</label> <h6 id="name-view"></h6> </span>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="">Address :</label><h6 id="address-view"></h6>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label class="col-form-label">Gender :</label><h6 id="gender-view"></h6>
+                    </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+        </div>
+    </div>
+</div>
+
 <script>
   $(document).ready(function () {
 
-    var table = $('#employeeTable').dataTable();
+       var table = $('#employeeTable').dataTable();
 
       $.ajaxSetup({
             headers: {
@@ -228,88 +261,86 @@
                 }
             });
         }
-
-
         /* End Display data into DataTable */
 
-    /* Insert data into Session */
-    $(document).on('click', '.add_emp_session', function (e) {
+        /* Insert data into Session */
+        $(document).on('click', '.add_emp_session', function (e) {
 
-        e.preventDefault();
-        var formData = new FormData($('#employeeForm')[0]);
-
-        var requiredFields = ['name','image','address', 'gender'];
-
-        for (var i = 0; i < requiredFields.length; i++) {
-            var fieldName = requiredFields[i];
-            if (!formData.has(fieldName) || !formData.get(fieldName)) {
-                alert('Please enter a ' + fieldName + '. Its required !'); return;
-            }
-        }
-  
-        $.ajax({
-            type: 'POST',
-            url: '/employee',
-            data: formData,
-            cache: false,
-            contentType: false,
-            processData: false,
-            success: function(response) {
-                  if (response.status == 400) {
-                    $('#save_msgList').html("");
-                    $('#save_msgList').addClass('alert alert-danger');
-                    $.each(response.errors, function (key, err_value) {
-                        $('#save_msgList').append(`<li> ${err_value}</li>`);
-                    });
-                } else {
-                    $('#save_msgList').html("");
-                    $('#success_message').addClass('alert alert-success');
-                    $('#success_message').text(response.message);
-                    $('#AddModal').find('input').val('');
-                    $('#AddModal').modal('hide');
-                    fetchemployee();
-                }
-            },  
-        });
-        $('.btn-close').find('input').val('');
-    });
-    /* End Insert data into Session */
-
-    /* Show Data for Edit */
-    $(document).on('click', '.editbtn', function (e) {
             e.preventDefault();
-            var empID = $(this).attr('value');
-             $('#editModal').modal('show');
-             $.ajax({
-                 type: "GET",
-                 url: "/edit-emp?empID="+empID,
-                 dataType: "json",
-                 success: function (response) {
-                    if (response.status == 404) {
-                        $('#success_message').addClass('alert alert-danger');
-                        $('#success_message').text(response.message);
-                        $('#editModal').modal('hide');
+            var formData = new FormData($('#employeeForm')[0]);
+
+            var requiredFields = ['name','image','address', 'gender'];
+
+            for (var i = 0; i < requiredFields.length; i++) {
+                var fieldName = requiredFields[i];
+                if (!formData.has(fieldName) || !formData.get(fieldName)) {
+                    alert('Please enter a ' + fieldName + '. Its required !'); return;
+                }
+            }
+    
+            $.ajax({
+                type: 'POST',
+                url: '/employee',
+                data: formData,
+                cache: false,
+                contentType: false,
+                processData: false,
+                success: function(response) {
+                    if (response.status == 400) {
+                        $('#save_msgList').html("");
+                        $('#save_msgList').addClass('alert alert-danger');
+                        $.each(response.errors, function (key, err_value) {
+                            $('#save_msgList').append(`<li> ${err_value}</li>`);
+                        });
                     } else {
-                        $('#empID').val(response.empID);
-                        $('#name').val(response.data.name);
-                        var imageUrl = response.data.image_path;
-                        $('#image-preview').attr('src', imageUrl);
-                        $('#address').val(response.data.address);
-                        var genderValue = response.data.gender;
-                        $('#gender').val(genderValue);
-                        $('#gender option[value="' + genderValue + '"]').prop('selected', true);
+                        $('#save_msgList').html("");
+                        $('#success_message').addClass('alert alert-success');
+                        $('#success_message').text(response.message);
+                        $('#AddModal').find('input').val('');
+                        $('#AddModal').modal('hide');
+                        fetchemployee();
                     }
-                 }
-             });
-             $('.btn-close').find('input').val('');
-
+                },  
+            });
+            $('.btn-close').find('input').val('');
         });
-  });
+        /* End Insert data into Session */
 
-  /* End Show Data for Edit */
+        /* Show Data for Edit */
+        $(document).on('click', '.editbtn', function (e) {
+                e.preventDefault();
+                var empID = $(this).attr('value');
+                $('#editModal').modal('show');
+                $.ajax({
+                    type: "GET",
+                    url: "/edit-emp?empID="+empID,
+                    dataType: "json",
+                    success: function (response) {
+                        if (response.status == 404) {
+                            $('#success_message').addClass('alert alert-danger');
+                            $('#success_message').text(response.message);
+                            $('#editModal').modal('hide');
+                        } else {
+                            $('#empID').val(response.empID);
+                            $('#name').val(response.data.name);
+                            var imageUrl = response.data.image_path;
+                            $('#image-preview').attr('src', imageUrl);
+                            $('#address').val(response.data.address);
+                            var genderValue = response.data.gender;
+                            $('#gender').val(genderValue);
+                            $('#gender option[value="' + genderValue + '"]').prop('selected', true);
+                        }
+                    }
+                });
+                $('.btn-close').find('input').val('');
 
-  /* Update Data */
-  $(document).on('click', '.update_emp_session', function (e) {
+            });
+        });
+
+        /* End Show Data for Edit */
+
+        /* Update Data */
+        $(document).on('click', '.update_emp_session', function (e) {
             e.preventDefault();
 
             var data = {
@@ -346,9 +377,9 @@
 
         });
 
-  /* End Update Data */
+        /* End Update Data */
 
-  /* Delete Data */
+        /* Delete Data */
 
         $(document).on('click', '.deletebtn', function () {
             var empID = $(this).attr('value');
@@ -360,8 +391,6 @@
             e.preventDefault();
 
             var empID = $('#empID').val();
-            alert(empID);
-
             $.ajax({
                 type: "DELETE",
                 url: "/delete-emp?empID=" +empID ,
@@ -381,16 +410,42 @@
             });
         });
 
-  /* Delete Data */
+         /* End Delete Data */
+
+           /* Show Data for Edit */
+        $(document).on('click', '.viewbtn', function (e) {
+                e.preventDefault();
+                var empID = $(this).attr('value');
+                $('#viewModal').modal('show');
+                $.ajax({
+                    type: "GET",
+                    url: "/edit-view?empID="+empID,
+                    dataType: "json",
+                    success: function (response) {
+                        if (response.status == 404) {
+                            $('#success_message').addClass('alert alert-danger');
+                            $('#success_message').text(response.message);
+                            $('#viewModal').modal('hide');
+                        } else {
+                            $('#empID').text(response.empID);
+                            $('#name-view').text(response.data.name);
+                            var imageUrl = response.data.image_path;
+                            $('#image-preview-view').attr('src', imageUrl);
+                            $('#address-view').text(response.data.address);
+                            $('#gender-view').text(response.data.gender);
+                          
+                        }
+                    }
+                });
+
+        });
+        
+
+        /* End Show Data for Edit */
 
 
 
-
-
- 
-
-
-
+  
 
 </script>
     </body>

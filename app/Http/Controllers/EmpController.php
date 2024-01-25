@@ -128,7 +128,18 @@ class EmpController extends Controller
     }
  
 
+    public function viewEmployee(Request $request){
 
+        $empID = $request->empID;
+        $sessionData = Session::get('employees');
+        $singleRecord = $sessionData[$empID]; 
+
+        if($singleRecord) {
+            return response()->json(['status'=>200,'data'=> $singleRecord,'empID' => $empID ]);
+        }else{
+            return response()->json(['status'=>404,'message'=>'No Data Found.']);
+        }
+    }
   
 
 
